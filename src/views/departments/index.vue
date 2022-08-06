@@ -2,15 +2,27 @@
   <div class="dashboard-container">
     <div class="app-container">
       <el-card class="box-card">
-        <TreeTools :isRoot="true" :treeNode="company"></TreeTools>
+        <TreeTools
+          @add="showAddDepts"
+          :isRoot="true"
+          :treeNode="company"
+        ></TreeTools>
         <!-- 树形 -->
         <el-tree :data="departs" :props="defaultProps" default-expand-all>
           <template v-slot="{ data }">
-            <TreeTools :treeNode="data"></TreeTools>
+            <TreeTools
+              @add="showAddDepts"
+              @remove="getDepts"
+              :treeNode="data"
+            ></TreeTools>
           </template>
         </el-tree>
       </el-card>
     </div>
+    <add-dept
+      :visible.sync="dialogVisible"
+      :currentNode="currentNode"
+    ></add-dept>
   </div>
 </template>
 
@@ -18,6 +30,7 @@
 import TreeTools from './components/tree-tools.vue'
 import { getDeptsApi } from '@/api/department'
 import { transListToTree } from '@/utils'
+import addDept from './components/add-dept.vue'
 export default {
   data() {
     return {
@@ -29,11 +42,14 @@ export default {
         { name: '行政部' },
         { name: '人事部' }
       ],
-      company: { name: '传值教育', manager: '负责人' }
+      company: { name: '传值教育', manager: '负责人' },
+      dialogVisible: false,
+      currentNode: {}
     }
   },
   components: {
-    TreeTools
+    TreeTools,
+    addDept
   },
   created() {
     this.getDepts()
@@ -44,6 +60,10 @@ export default {
       const res = await getDeptsApi()
       // console.log(res)
       this.departs = transListToTree(res.depts, '')
+    },
+    showAddDepts(val) {
+      this.dialogVisible = true
+      this.currentNode = val
     }
   }
 }
