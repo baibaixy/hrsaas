@@ -30,7 +30,30 @@
           >
           </el-pagination>
         </el-tab-pane>
-        <el-tab-pane label="公司信息" name="second">配置管理</el-tab-pane>
+        <el-tab-pane label="公司信息" name="second">
+          <el-alert title="消息提示的文案" type="info" show-icon> </el-alert>
+
+          <el-form ref="form" label-width="80px">
+            <el-form-item label="公司名称">
+              <el-input disabled v-model="companyInfoForm.name"></el-input>
+            </el-form-item>
+
+            <el-form-item label="公司地址">
+              <el-input
+                disabled
+                v-model="companyInfoForm.companyAddress"
+              ></el-input>
+            </el-form-item>
+
+            <el-form-item label="公司邮箱">
+              <el-input disabled v-model="companyInfoForm.mailbox"></el-input>
+            </el-form-item>
+
+            <el-form-item label="备注">
+              <el-input disabled v-model="companyInfoForm.remarks"></el-input>
+            </el-form-item>
+          </el-form>
+        </el-tab-pane>
       </el-tabs>
     </div>
     <el-dialog
@@ -57,6 +80,7 @@
 
 <script>
 import { getRolesApi, addRolesApi } from '@/api/role'
+import { getCompanyIdApi } from '@/api/setting'
 export default {
   data() {
     return {
@@ -75,6 +99,7 @@ export default {
 
   created() {
     this.getRolesApi()
+    this.getCompanyId()
   },
 
   methods: {
@@ -107,9 +132,18 @@ export default {
     closeDialog() {
       this.$refs.form.restFields()
       this.form.description = ''
+    },
+    async getCompanyId() {
+      const { data } = await getCompanyIdApi(
+        this.$store.state.user.userInfo.companyId
+      )
     }
   }
 }
 </script>
 
-<style scoped lang="less"></style>
+<style scoped lang="scss">
+.el-form {
+  margin-top: 10px;
+}
+</style>
