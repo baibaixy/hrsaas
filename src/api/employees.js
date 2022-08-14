@@ -56,3 +56,23 @@ export function importEmployee(data) {
     data
   })
 }
+/**
+ * 获取用户详细基本信息
+ * @param {*} id 用户id
+ * @returns
+ */
+export function getUserDetailApi(id) {
+  return request({
+    url: `/employees/${id}/personalInfo`
+  })
+}
+/** *
+ *  更新用户详情的基础信息
+ * **/
+export function updatePersonal(data) {
+  return request({
+    url: `/employees/${data.userId}/personalInfo`,
+    method: 'put',
+    data
+  })
+}
