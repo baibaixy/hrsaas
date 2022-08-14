@@ -10,7 +10,9 @@
             @click="$router.push('/import')"
             >导入</el-button
           >
-          <el-button size="small" type="danger">导出</el-button>
+          <el-button size="small" type="danger" @click="exportExcel"
+            >导出</el-button
+          >
           <el-button size="small" type="primary" @click="addEmployeeDialog"
             >新增员工</el-button
           >
@@ -95,7 +97,7 @@
 import { getEmployeesInfoApi, delEmployee } from '@/api/employees'
 import employee from '@/constant/employees'
 import addDialog from './components/add-employes.vue'
-
+const { exportExcelMapPath, hireType } = employee
 export default {
   data() {
     return {
@@ -141,6 +143,35 @@ export default {
     },
     addEmployeeDialog() {
       this.dialogVisible = true
+    },
+    async exportExcel() {
+      const { export_json_to_excel } = await import('@/vendor/Export2Excel')
+      const { rows } = await getEmployeesInfoApi({
+        page: 1,
+        size: this.pages.total
+      })
+      const header = Object.keys(exportExcelMapPath)
+      const data = rows.map((item) => {
+        return header.map((h) => {
+          if (h === '聘用形式') {
+            const findItem = hireType.find((hire) => {
+              return hire.id === item[exportExcelMapPath[h]]
+            })
+            return findItem ? findItem.value : '未知'
+          } else {
+            return item[exportExcelMapPath[h]]
+          }
+        })
+      })
+
+      export_json_to_excel({
+        header, //表头 必填
+        data, //具体数据 必填
+        filename: '员工列表', //非必填
+        autoWidth: true, //非必填
+        bookType: 'xlsx' //非必填
+        // multiHeader:[['手机号','其他信息']]
+      })
     }
   }
 }
