@@ -68,7 +68,12 @@
               <el-button type="text" size="small">转正</el-button>
               <el-button type="text" size="small">调岗</el-button>
               <el-button type="text" size="small">离职</el-button>
-              <el-button type="text" size="small">角色</el-button>
+              <el-button
+                type="text"
+                size="small"
+                @click="showAssignRole(row.id)"
+                >角色</el-button
+              >
               <el-button type="text" size="small" @click="delFn(row.id)"
                 >删除</el-button
               >
@@ -99,6 +104,10 @@
     <el-dialog title="用户头像" :visible.sync="Visible">
       <canvas id="canvas"></canvas>
     </el-dialog>
+    <assignRole
+      :visible.sync="visible"
+      :currentEmployeeId="currentEmployeeId"
+    ></assignRole>
   </div>
 </template>
 
@@ -106,6 +115,7 @@
 import { getEmployeesInfoApi, delEmployee } from '@/api/employees'
 import employee from '@/constant/employees'
 import addDialog from './components/add-employes.vue'
+import assignRole from './components/assign-role.vue'
 const { exportExcelMapPath, hireType } = employee
 import QRCode from 'qrcode'
 export default {
@@ -119,7 +129,9 @@ export default {
       },
       dialogVisible: false,
       loading: false,
-      Visible: false
+      Visible: false,
+      visible: false,
+      currentEmployeeId: ''
     }
   },
 
@@ -127,7 +139,8 @@ export default {
     this.getEmployeesInfo()
   },
   components: {
-    addDialog
+    addDialog,
+    assignRole
   },
   methods: {
     async getEmployeesInfo() {
@@ -146,6 +159,10 @@ export default {
       )
       return findHireType ? findHireType.value : '未知'
     },
+    showAssignRole(id) {
+      this.currentEmployeeId = id
+      this.visible = true
+    },
     async delFn(id) {
       await this.$confirm('是否删除')
       await delEmployee(id)
@@ -155,6 +172,7 @@ export default {
     addEmployeeDialog() {
       this.dialogVisible = true
     },
+
     async exportExcel() {
       const { export_json_to_excel } = await import('@/vendor/Export2Excel')
       const { rows } = await getEmployeesInfoApi({

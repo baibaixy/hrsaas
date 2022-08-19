@@ -10,3 +10,9 @@ export function getCompanyIdApi(companyId) {
     url: `/company/${companyId}`
   })
 }
+
+export function getRoleList(companyId) {
+  return request({
+    url: `/company/${companyId}`
+  })
+}

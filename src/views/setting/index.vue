@@ -13,7 +13,9 @@
             <el-table-column prop="description" label="描述"> </el-table-column>
             <el-table-column prop="address" label="操作">
               <template>
-                <el-button size="small" type="success">分配权限</el-button>
+                <el-button size="small" type="success" @click="showRightDialog"
+                  >分配权限</el-button
+                >
                 <el-button size="small" type="primary">编辑</el-button>
                 <el-button size="small" type="danger">删除</el-button>
               </template>
@@ -75,13 +77,35 @@
         <el-button type="primary" @click="onConfirm">确 定</el-button>
       </span>
     </el-dialog>
+    <el-dialog
+      title="给角色分配权限"
+      :visible="setRightVisible"
+      @close="closeFn"
+    >
+      <el-tree
+        :data="permission"
+        default-expand-all
+        show-checkbox
+        node-key="id"
+        :default-checked-keys="defaultCheckKeys"
+        :props="{ label: 'name' }"
+        @node-click="handleNodeClick"
+      ></el-tree>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="closeFn">取 消</el-button>
+        <el-button type="primary">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
 <script>
 import { getRolesApi, addRolesApi } from '@/api/role'
 import { getCompanyIdApi } from '@/api/setting'
+import { getPermissionList } from '@/api/permission'
+import { transListToTree } from '@/utils'
 export default {
+  name: 'Setting',
   data() {
     return {
       activeName: 'first',
@@ -93,13 +117,18 @@ export default {
       form: { name: '', description: '' },
       formRules: {
         name: [{ required: true, message: '请输入角色名称', trigger: 'blur' }]
-      }
+      },
+      setRightVisible: false,
+      companyInfoForm: {},
+      permission: {},
+      defaultCheckKeys: ['1', '1063315016368918528']
     }
   },
 
   created() {
     this.getRolesApi()
     this.getCompanyId()
+    this.getPermissions()
   },
 
   methods: {
@@ -137,6 +166,18 @@ export default {
       const { data } = await getCompanyIdApi(
         this.$store.state.user.userInfo.companyId
       )
+    },
+    showRightDialog() {
+      this.setRightVisible = true
+    },
+    closeFn() {
+      this.setRightVisible = false
+    },
+    async getPermissions() {
+      const res = await getPermissionList()
+      const treePermission = transListToTree(res, '0')
+      this.permission = treePermission
+      console.log(this.permission)
     }
   }
 }
