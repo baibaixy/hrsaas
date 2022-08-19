@@ -27,7 +27,9 @@
           <el-tab-pane name="user" label="个人详情">
             <userInfo></userInfo>
           </el-tab-pane>
-          <el-tab-pane name="job" label="岗位信息" />
+          <el-tab-pane name="job" label="岗位信息">
+            <jobInfo></jobInfo>
+          </el-tab-pane>
         </el-tabs>
       </el-card>
     </div>
@@ -37,6 +39,7 @@
 <script>
 import { getUserDetail, saveUserDetailById } from '@/api/user'
 import userInfo from './components/user-info.vue'
+import jobInfo from './components/job-info.vue'
 import Cookies from 'js-cookie'
 export default {
   data() {
@@ -50,12 +53,13 @@ export default {
     this.getUserDetail()
   },
   components: {
-    userInfo
+    userInfo,
+    jobInfo
   },
   methods: {
     async getUserDetail() {
       const res = await getUserDetail(this.$route.params.id)
-    //   console.log(res)
+      //   console.log(res)
       this.formData = res
     },
     async updateFn() {

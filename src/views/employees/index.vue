@@ -30,6 +30,7 @@
                 :src="row.staffPhoto"
                 alt=""
                 style="border-radius: 50%; width: 100px; hight: 100px padding:10px"
+                @click="showErWeiMa(row.staffPhoto)"
               />
             </template>
           </el-table-column>
@@ -95,6 +96,9 @@
       @add-success="getEmployeesInfo"
       :visible.sync="dialogVisible"
     ></addDialog>
+    <el-dialog title="用户头像" :visible.sync="Visible">
+      <canvas id="canvas"></canvas>
+    </el-dialog>
   </div>
 </template>
 
@@ -103,6 +107,7 @@ import { getEmployeesInfoApi, delEmployee } from '@/api/employees'
 import employee from '@/constant/employees'
 import addDialog from './components/add-employes.vue'
 const { exportExcelMapPath, hireType } = employee
+import QRCode from 'qrcode'
 export default {
   data() {
     return {
@@ -113,7 +118,8 @@ export default {
         total: 0
       },
       dialogVisible: false,
-      loading: false
+      loading: false,
+      Visible: false
     }
   },
 
@@ -176,6 +182,16 @@ export default {
         autoWidth: true, //非必填
         bookType: 'xlsx' //非必填
         // multiHeader:[['手机号','其他信息']]
+      })
+    },
+    showErWeiMa(staffPhoto) {
+      if (!staffPhoto) {
+        return this.$message.error('该用户无头像')
+      }
+      this.Visible = true
+      this.$nextTick(() => {
+        const canvas = document.getElementById('canvas')
+        QRCode.toCanvas(canvas, staffPhoto)
       })
     }
   }

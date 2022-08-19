@@ -18,6 +18,9 @@ import '@/permission' // permission control
 import components from './components'
 Vue.use(components)
 
+import Print from 'vue-print-nb'
+Vue.use(Print)
+
 //统一注册过滤器
 import * as filters from '@/filters'
 for (let key in filters) {
