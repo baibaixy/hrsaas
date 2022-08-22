@@ -24,3 +24,27 @@ export function addRolesApi(data) {
     data
   })
 }
+
+/**
+ * 根据id提供角色
+ * @param {*} id
+ * @returns
+ */
+export function getRolesInfo(id) {
+  return request({
+    url: '/sys/role/' + id
+  })
+}
+
+/**
+ * 给角色分配权限
+ * @param {*} data  {id, premIds}
+ * @returns  promise
+ */
+export function assignPerm(data) {
+  return request({
+    url: '/sys/role/assignPrem',
+    method: 'put',
+    data
+  })
+}

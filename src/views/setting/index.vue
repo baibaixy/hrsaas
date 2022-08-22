@@ -3,7 +3,10 @@
     <div class="app-container">
       <el-tabs v-model="activeName">
         <el-tab-pane label="角色管理" name="first">
-          <el-button type="primary" @click="dialogVisible = true"
+          <el-button
+            type="primary"
+            @click="addDialogVisible = true"
+            v-if="isHas(point.roles.add)"
             >新增角色</el-button
           >
           <!-- 表格 -->
@@ -12,8 +15,11 @@
             <el-table-column prop="name" label="角色"> </el-table-column>
             <el-table-column prop="description" label="描述"> </el-table-column>
             <el-table-column prop="address" label="操作">
-              <template>
-                <el-button size="small" type="success" @click="showRightDialog"
+              <template slot-scope="{ row }">
+                <el-button
+                  size="small"
+                  type="success"
+                  @click="permissionsClick(row.id)"
                   >分配权限</el-button
                 >
                 <el-button size="small" type="primary">编辑</el-button>
@@ -33,24 +39,26 @@
           </el-pagination>
         </el-tab-pane>
         <el-tab-pane label="公司信息" name="second">
-          <el-alert title="消息提示的文案" type="info" show-icon> </el-alert>
-
+          <el-alert
+            title="对公司名称、公司地址、营业执照、公司地区的更新，将使得公司资料被重新审核，请谨慎修改"
+            type="info"
+            show-icon
+            :closable="false"
+          >
+          </el-alert>
           <el-form ref="form" label-width="80px">
             <el-form-item label="公司名称">
               <el-input disabled v-model="companyInfoForm.name"></el-input>
             </el-form-item>
-
             <el-form-item label="公司地址">
               <el-input
                 disabled
                 v-model="companyInfoForm.companyAddress"
               ></el-input>
             </el-form-item>
-
             <el-form-item label="公司邮箱">
               <el-input disabled v-model="companyInfoForm.mailbox"></el-input>
             </el-form-item>
-
             <el-form-item label="备注">
               <el-input disabled v-model="companyInfoForm.remarks"></el-input>
             </el-form-item>
@@ -58,54 +66,65 @@
         </el-tab-pane>
       </el-tabs>
     </div>
+    <!-- 添加角色对话框 -->
     <el-dialog
-      @close="closeDialog"
+      @close="dialogClose"
       title="新增角色"
-      :visible.sync="dialogVisible"
+      :visible.sync="addDialogVisible"
       width="50%"
     >
-      <el-form ref="form" :model="form" label-width="80px" :rules="formRules">
+      <el-form
+        ref="form"
+        label-width="80px"
+        :model="addRoleForm"
+        :rules="addRoleFormRules"
+      >
         <el-form-item label="角色名称" prop="name">
-          <el-input v-model="form.name"></el-input>
+          <el-input v-model="addRoleForm.name"></el-input>
         </el-form-item>
-        <el-form-item label="角色描述" prop="description">
-          <el-input v-model="form.description"></el-input>
+        <el-form-item label="角色描述">
+          <el-input v-model="addRoleForm.description"></el-input>
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button @click="onClose">取 消</el-button>
-        <el-button type="primary" @click="onConfirm">确 定</el-button>
+        <el-button type="primary" @click="addRole">确 定</el-button>
       </span>
     </el-dialog>
+    <!-- 给角色分配权限 -->
     <el-dialog
       title="给角色分配权限"
-      :visible="setRightVisible"
-      @close="closeFn"
+      :visible.sync="setRightDialog"
+      width="50%"
+      destroy-on-close
+      @close="setRightClose"
     >
       <el-tree
-        :data="permission"
         default-expand-all
-        show-checkbox
-        node-key="id"
-        :default-checked-keys="defaultCheckKeys"
+        :data="permissions"
         :props="{ label: 'name' }"
-        @node-click="handleNodeClick"
+        show-checkbox
+        :default-checked-keys="defaultCheckedKeys"
+        node-key="id"
+        ref="perTree"
       ></el-tree>
       <span slot="footer" class="dialog-footer">
-        <el-button @click="closeFn">取 消</el-button>
-        <el-button type="primary">确 定</el-button>
+        <el-button @click="setRightDialog = false">取 消</el-button>
+        <el-button type="primary" @click="onSave">确 定</el-button>
       </span>
     </el-dialog>
   </div>
 </template>
 
 <script>
-import { getRolesApi, addRolesApi } from '@/api/role'
-import { getCompanyIdApi } from '@/api/setting'
-import { getPermissionList } from '@/api/permission'
+import { getRolesApi, addRolesApi, getRolesInfo, assignPerm } from '@/api/role'
+import { getCompanyInfo } from '@/api/setting'
+import { getPermissionList } from '@/api/permisson'
 import { transListToTree } from '@/utils'
+// import mixinPermission from '@/mixins/permission'
 export default {
   name: 'Setting',
+  // mixins: [mixinPermission],
   data() {
     return {
       activeName: 'first',
@@ -113,22 +132,37 @@ export default {
       total: 0,
       pagesize: 3,
       page: 1,
-      dialogVisible: false,
-      form: { name: '', description: '' },
-      formRules: {
-        name: [{ required: true, message: '请输入角色名称', trigger: 'blur' }]
+      addDialogVisible: false,
+      addRoleForm: {
+        name: '', //角色名称
+        description: '' //角色描述
       },
-      setRightVisible: false,
-      companyInfoForm: {},
-      permission: {},
-      defaultCheckKeys: ['1', '1063315016368918528']
+      addRoleFormRules: {
+        name: [
+          {
+            required: true,
+            message: '请输入角色名称',
+            trigger: 'blur'
+          }
+        ]
+      },
+      companyInfoForm: {
+        // name: '江苏传智播客教育科技股份有限公司',
+        // companyAddress: '北京市昌平区建材城西路金燕龙办公楼一层',
+        // mailbox: 'bd@itcastcn',
+        // remarks: '传智播客官网-好口碑IT培训机构,一样的教育,不一样的品质'
+      },
+      setRightDialog: false, //给角色分配权限
+      permissions: [], //权限树形数据
+      defaultCheckedKeys: [], //分配权限
+      roleId: ''
     }
   },
 
   created() {
     this.getRolesApi()
-    this.getCompanyId()
-    this.getPermissions()
+    this.getCompanyInfo()
+    this.getPermissionList()
   },
 
   methods: {
@@ -148,37 +182,49 @@ export default {
       this.pagesize = val
       this.getRolesApi()
     },
+    //点击取消
     onClose() {
-      this.dialogVisible = false
+      this.addDialogVisible = false
     },
-    async onConfirm() {
+    async addRole() {
       await this.$refs.form.validate()
-      await addRolesApi(this.form)
+      await addRolesApi(this.addRoleForm)
       this.$message.success('添加成功')
-      this.dialogVisible = false
+      this.addDialogVisible = false
       this.getRolesApi()
     },
-    closeDialog() {
-      this.$refs.form.restFields()
-      this.form.description = ''
+    dialogClose() {
+      this.$refs.form.resetFields()
+      this.addRoleForm.description = ''
     },
-    async getCompanyId() {
-      const { data } = await getCompanyIdApi(
+    async getCompanyInfo() {
+      const res = await getCompanyInfo(
         this.$store.state.user.userInfo.companyId
       )
+      this.companyInfoForm = res
     },
-    showRightDialog() {
-      this.setRightVisible = true
+    async permissionsClick(id) {
+      this.roleId = id
+      this.setRightDialog = true
+      const res = await getRolesInfo(id)
+      this.defaultCheckedKeys = res.permIds
     },
-    closeFn() {
-      this.setRightVisible = false
-    },
-    async getPermissions() {
+    async getPermissionList() {
       const res = await getPermissionList()
       const treePermission = transListToTree(res, '0')
-      this.permission = treePermission
-      console.log(this.permission)
-    }
+      this.permissions = treePermission
+    },
+    setRightClose() {
+      this.defaultCheckedKeys = []
+    },
+    async onSave() {
+      await assignPerm({
+        id: this.roleId,
+        permIds: this.$refs.perTree.getCheckedKeys()
+      })
+      this.$message.success('分配成功')
+      this.setRightDialog = false
+    },
   }
 }
 </script>

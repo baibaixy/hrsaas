@@ -8,12 +8,17 @@
             size="small"
             type="warning"
             @click="$router.push('/import')"
+            v-isHas="point.employees.import"
             >导入</el-button
           >
           <el-button size="small" type="danger" @click="exportExcel"
             >导出</el-button
           >
-          <el-button size="small" type="primary" @click="addEmployeeDialog"
+          <el-button
+            v-if="isHas(point.employees.add)"
+            size="small"
+            type="primary"
+            @click="addEmployeeDialog"
             >新增员工</el-button
           >
         </template>
@@ -74,7 +79,11 @@
                 @click="showAssignRole(row.id)"
                 >角色</el-button
               >
-              <el-button type="text" size="small" @click="delFn(row.id)"
+              <el-button
+                type="text"
+                size="small"
+                @click="delFn(row.id)"
+                v-if="isHas(point.employees.del)"
                 >删除</el-button
               >
             </template>
@@ -118,7 +127,10 @@ import addDialog from './components/add-employes.vue'
 import assignRole from './components/assign-role.vue'
 const { exportExcelMapPath, hireType } = employee
 import QRCode from 'qrcode'
+import permissionPoint from '@/constant/permission'
+// import mixinPermission from '@/mixins/permission'
 export default {
+  // mixins: [mixinPermission],
   data() {
     return {
       employee: [],
@@ -131,7 +143,8 @@ export default {
       loading: false,
       Visible: false,
       visible: false,
-      currentEmployeeId: ''
+      currentEmployeeId: '',
+      point: permissionPoint
     }
   },
 
@@ -211,6 +224,9 @@ export default {
         const canvas = document.getElementById('canvas')
         QRCode.toCanvas(canvas, staffPhoto)
       })
+    },
+    isHas(){
+      
     }
   }
 }

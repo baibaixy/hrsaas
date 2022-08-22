@@ -5,7 +5,7 @@ import request from '@/utils/request'
  * @param {*} companyId 
  * @returns 
  */
-export function getCompanyIdApi(companyId) {
+export function getCompanyInfo(companyId) {
   return request({
     url: `/company/${companyId}`
   })
