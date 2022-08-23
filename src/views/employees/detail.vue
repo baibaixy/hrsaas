@@ -20,15 +20,15 @@
                 />
               </el-form-item>
               <el-form-item>
-                <el-button type="primary" @click="updateFn">更新</el-button>
+                <el-button type="primary" @click="onSave">更新</el-button>
               </el-form-item>
             </el-form>
           </el-tab-pane>
           <el-tab-pane name="user" label="个人详情">
-            <userInfo></userInfo>
+            <user-info />
           </el-tab-pane>
           <el-tab-pane name="job" label="岗位信息">
-            <jobInfo></jobInfo>
+            <JobInfo />
           </el-tab-pane>
         </el-tabs>
       </el-card>
@@ -37,40 +37,49 @@
 </template>
 
 <script>
-import { getUserDetail, saveUserDetailById } from '@/api/user'
-import userInfo from './components/user-info.vue'
-import jobInfo from './components/job-info.vue'
+import { getUserDetail, saveUserDetailById } from '@/api/user.js'
+import UserInfo from './components/user-info.vue'
+import JobInfo from './components/job-info.vue'
 import Cookies from 'js-cookie'
 export default {
   data() {
     return {
       formData: {},
-      activeName: Cookies.get('employeeDetailTab') || 'account'
+      activeName: Cookies.get('employeeDetailTab') || 'account',
     }
+  },
+  // 路由开启props,此时可以接收路由参数
+  props: {
+    id: {
+      required: true,
+      type: String,
+    },
+  },
+
+  components: {
+    UserInfo,
+    JobInfo,
   },
 
   created() {
-    this.getUserDetail()
+    this.loadUserDetail()
+    // console.log(this.$attrs)
   },
-  components: {
-    userInfo,
-    jobInfo
-  },
+
   methods: {
-    async getUserDetail() {
+    async loadUserDetail() {
       const res = await getUserDetail(this.$route.params.id)
-      //   console.log(res)
       this.formData = res
     },
-    async updateFn() {
+    async onSave() {
       await saveUserDetailById(this.formData)
       this.$message.success('更新成功')
     },
     handleTabClick() {
       Cookies.set('employeeDetailTab', this.activeName)
-    }
-  }
+    },
+  },
 }
 </script>
 
-<style scoped></style>
+<style scoped lang="less"></style>

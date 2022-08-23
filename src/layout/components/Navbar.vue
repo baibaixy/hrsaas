@@ -5,13 +5,16 @@
       class="hamburger-container"
       @toggleClick="toggleSideBar"
     />
+
+    <!-- <breadcrumb class="breadcrumb-container" /> -->
     <div class="app-breadcrumb">
       {{ $store.state.user.userInfo.companyName }}
       <span class="breadBtn">体验版</span>
     </div>
-    <!-- <breadcrumb class="breadcrumb-container" /> -->
 
     <div class="right-menu">
+      <ToggleLang></ToggleLang>
+      <FullScreen></FullScreen>
       <el-dropdown class="avatar-container" trigger="click">
         <div class="avatar-wrapper">
           <img
@@ -39,11 +42,13 @@
 import { mapGetters } from 'vuex'
 import Breadcrumb from '@/components/Breadcrumb'
 import Hamburger from '@/components/Hamburger'
-import cat from '@/assets/小猫咪/8888.png'
+import defaultImg from '@/assets/common/head.jpg'
+
 export default {
+  // 如果想在data中定义本地图片路径,需要先引入
   data() {
     return {
-      defaultImg: cat
+      defaultImg
     }
   },
   components: {
@@ -91,6 +96,7 @@ export default {
       margin-left: 15px;
     }
   }
+
   .hamburger-container {
     line-height: 46px;
     height: 100%;
@@ -99,7 +105,8 @@ export default {
     transition: background 0.3s;
     -webkit-tap-highlight-color: transparent;
     color: #fff;
-    fill: currentcolor;
+    fill: currentColor;
+
     &:hover {
       background: rgba(0, 0, 0, 0.025);
     }
@@ -113,7 +120,7 @@ export default {
     float: right;
     height: 100%;
     line-height: 50px;
-
+    display: flex;
     &:focus {
       outline: none;
     }
@@ -147,8 +154,9 @@ export default {
         cursor: pointer;
 
         span {
-          margin: 0 5px;
+          margin: 0 3px;
         }
+
         .user-avatar {
           cursor: pointer;
           width: 40px;

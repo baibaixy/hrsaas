@@ -1,37 +1,36 @@
 import request from '@/utils/request'
 
 /**
- *登录请求
- * @param {*} data
- * @returns
+ * 登录请求
+ * @param {Object} data password mobile
+ * @returns promise
  */
 export function login(data) {
   return request({
     url: '/sys/login',
     method: 'POST',
-    data
+    data,
   })
 }
-
 /**
  * 获取用户信息
- * @returns 用户基本信息
+ * @returns promise
  */
 export function getUserInfoApi() {
   return request({
     url: '/sys/profile',
-    method: 'POST'
+    method: 'POST',
   })
 }
 
 /**
- * 获取用户详细信息
- * @param {*} id 用户id
- * @returns
+ * 根据用户id获取员工详情数据
+ * @param {String} id 用户id
+ * @returns promise
  */
 export function getUserDetail(id) {
   return request({
-    url: '/sys/user/' + id
+    url: '/sys/user/' + id,
   })
 }
 
@@ -43,8 +42,6 @@ export function saveUserDetailById(data) {
   return request({
     url: `/sys/user/${data.id}`,
     method: 'put',
-    data
+    data,
   })
 }
-
-
